@@ -8,9 +8,6 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using NAudio.Wave;
 using NAudio.SoundFont;
-
-
-
 namespace Raptor
 {
     public class Game : GameWindow
