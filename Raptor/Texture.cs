@@ -16,41 +16,18 @@ namespace Raptor
         public int GlHandle { get; protected set; }//хранит идентификатор текстуры в OpenGL, сгенерированный функцией GL.GenTexture().
         public int Width { get; protected set; }//ширина 
         public int Height { get; protected set; }//и высота текстуры, взятые из изображения
-        private static bool? CalculatedSupportForNpot;
-        public static bool NpotIsSupported //Проверяет 
-        {   //позволяет текстурам не требовать размеров, кратных степени двойки               
-            get
-            {
-                if (!CalculatedSupportForNpot.HasValue)
-                {
-                    CalculatedSupportForNpot = false;
-                    int ExtensionsCount;
-                    GL.GetInteger(GetPName.NumExtensions, out ExtensionsCount);
-                    for (var i = 0; i < ExtensionsCount; i++)
-                    {
-                        if ("GL_ARB_texture_non_power_of_two" == GL.GetString(StringName.Extensions, i))
-                        {
-                            CalculatedSupportForNpot = true;
-                            break;
-                        }
-                    }
-                }
-                return CalculatedSupportForNpot.Value;
-            }
-        }
-
         public int PotWidth
         {
             get
             {
-                return NpotIsSupported ? Width : (int)Math.Pow(2, Math.Ceiling(Math.Log(Width, 2)));
+                return Width;
             }
         }
         public int PotHeight
         {
             get
             {
-                return NpotIsSupported ? Height : (int)Math.Pow(2, Math.Ceiling(Math.Log(Height, 2)));
+                return Height;
             }
         }
         public Texture(Bitmap Bitmap)

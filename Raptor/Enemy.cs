@@ -11,11 +11,20 @@ namespace Raptor
     {
         public float X, Y;
         public int Texture;
-        public Enemy(float x, float y, int texture)
+        public float Speed { get; set; }
+        public float Health { get; set; }
+
+        public Enemy(float x, float y, int texture, float health, float speed)
         {
             X = x;
             Y = y;
             Texture = texture;
+            Health = health;
+            Speed = speed;
+        }
+        public void TakeDamage(float damage)
+        {
+            Health -= damage;
         }
     }
 }

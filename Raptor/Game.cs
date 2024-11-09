@@ -13,14 +13,16 @@ namespace Raptor
     public class Game : GameWindow
     {
         private const int enemySize = 35;
+        private int enemiesPassed = 0;  // Счётчик вылетевших врагов
         private float shootCooldown = 0f; // Перезарядка после выстрела
-        private const float cooldownTime = 0.3f; // Время между выстрелами, в секундах
+        private const float cooldownTime = 0.17f; // Время между выстрелами, в секундах
         int playerTexture, bulletTexture, enemyTexture;
         float playerX = 0, playerY = -0.8f;
         List<Bullet> bullets = new List<Bullet>();
         List<Enemy> enemies = new List<Enemy>();
         Random random = new Random();
         float spawnTimer = 0;
+        
 
         public Game(int w, int h, string title) :
             base(w, h, GraphicsMode.Default, title, GameWindowFlags.FixedWindow)
@@ -41,7 +43,6 @@ namespace Raptor
         }
         protected override void OnUnload(EventArgs e)
         {
-
             GL.DeleteTexture(playerTexture);
             GL.DeleteTexture(bulletTexture);
             GL.DeleteTexture(enemyTexture);;
@@ -56,10 +57,10 @@ namespace Raptor
             if (shootCooldown < 0) shootCooldown = 0;
 
             // Управление игроком
-            if (keyboard.IsKeyDown(Key.Left) && playerX > -0.95f) playerX -= 0.05f;
-            if (keyboard.IsKeyDown(Key.Right) && playerX < 0.95f) playerX += 0.05f;
-            if (keyboard.IsKeyDown(Key.Up) &&  playerY < 0.95f) playerY += 0.05f;
-            if (keyboard.IsKeyDown(Key.Down) && playerY > -0.95f) playerY -= 0.05f;
+            if (keyboard.IsKeyDown(Key.Left) && playerX > -0.95f) playerX -= 0.03f;
+            if (keyboard.IsKeyDown(Key.Right) && playerX < 0.95f) playerX += 0.03f;
+            if (keyboard.IsKeyDown(Key.Up) &&  playerY < 0.95f) playerY += 0.03f;
+            if (keyboard.IsKeyDown(Key.Down) && playerY > -0.95f) playerY -= 0.04f;
             if (keyboard.IsKeyDown(Key.Escape))Exit();
             // Стрельба
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
@@ -70,17 +71,40 @@ namespace Raptor
             foreach (var bullet in bullets)// Обновление позиций пуль
                 bullet.Y += 0.05f;
             foreach (var enemy in enemies)// Обновление позиций врагов
-                enemy.Y -= 0.02f;
+                enemy.Y -= enemy.Speed;
 
-            bullets.RemoveAll(b => b.Y > 1.0f);// Удаление внеэкранных объектов
-            enemies.RemoveAll(c => c.Y < -1.0f);
-
+            bullets.RemoveAll(b => b.Y > 1.0f);// Удаление пуль вне экрана                                               
+            for (int i = enemies.Count - 1; i >= 0; i--)//если враг вылетел за нижнюю часть карты
+            {
+                if (enemies[i].Y < -1.0f) // Если враг вышел за нижний край
+                {
+                    enemiesPassed++; // Увеличиваем счётчик
+                    enemies.RemoveAt(i); // Удаляем врага
+                }
+            }
             // Спавн врагов
             spawnTimer += (float)e.Time;
             if (spawnTimer >= 1.0f)
             {
                 float x = (float)(random.NextDouble() * 1.8 - 0.9); // Генерация позиции врага по X
-                enemies.Add(new Enemy(x, 1.0f, enemyTexture));
+                int health = random.Next(1, 4);
+                float speed;
+                if (health == 1)
+                {
+                    speed = 0.016f;
+                }
+                else 
+                {
+                    if (health >= 2)
+                    {
+                        speed = 0.01f;
+                    }
+                    else
+                    {
+                        speed = 0.007f;
+                    }
+                }
+                enemies.Add(new Enemy(x, 1.0f, enemyTexture, health, speed));
                 spawnTimer = 0;
             }
             // Проверка столкновений пуль с врагами
@@ -90,9 +114,13 @@ namespace Raptor
                 {
                     if (CheckCollision(bullets[i].X, bullets[i].Y, 0.05f, 0.05f, enemies[j].X, enemies[j].Y, 0.1f, 0.1f))
                     {
+                        enemies[j].TakeDamage(1); // Наносим урон врагу
                         bullets.RemoveAt(i); // Удаляем пулю
-                        enemies.RemoveAt(j); // Удаляем врага
-                        break; // Прекращаем проверку текущей пули, так как она уже удалена
+                        if (enemies[j].Health <= 0) // Если здоровье врага 0 или меньше, удаляем его
+                        {
+                            enemies.RemoveAt(j);
+                        }
+                        break; // Прекращаем проверку текущей пули
                     }
                 }
             }
@@ -116,6 +144,8 @@ namespace Raptor
                 DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
             foreach (var enemy in enemies)
                 DrawObject(enemy.Texture, enemy.X, enemy.Y, 0.1f, 0.1f);
+            
+            Console.WriteLine($"Enemies passed: {enemiesPassed}");
 
             SwapBuffers();
         }
@@ -144,7 +174,6 @@ namespace Raptor
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Clamp);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
-
             return textureId;
         }
 
@@ -152,14 +181,14 @@ namespace Raptor
         {
             GL.BindTexture(TextureTarget.Texture2D, texture);
             GL.Begin(PrimitiveType.Quads);//рисуем квадратики
-            GL.Color4(0.0f, 1.0f, 0.0f, 0.0f); // Установка цвета с альфа-каналом (где 1.0f — непрозрачный, 0.0f — полностью прозрачный)
+            //GL.Color4(1.0f, 1.0f, 1.0f, 1.0f); // Установка цвета с альфа-каналом (где 1.0f — непрозрачный, 0.0f — полностью прозрачный)
 
             GL.TexCoord2(0, 0); GL.Vertex2(x - width / 2, y - height / 2);//GL.TexCoord2 устанавливает координату текстурки
             GL.TexCoord2(1, 0); GL.Vertex2(x + width / 2, y - height / 2);
             GL.TexCoord2(1, 1); GL.Vertex2(x + width / 2, y + height / 2);
             GL.TexCoord2(0, 1); GL.Vertex2(x - width / 2, y + height / 2);
             // Сбрасываем цвет, чтобы он не применялся к другим объектам
-            GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+            //GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
             GL.End();
         }
