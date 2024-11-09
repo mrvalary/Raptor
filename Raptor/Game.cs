@@ -49,17 +49,12 @@ namespace Raptor
             {
                 bullets.Add(new Bullet(playerX, playerY + 0.1f, bulletTexture));
             }
-
-            // Обновление позиций пуль
-            foreach (var bullet in bullets)
+            foreach (var bullet in bullets)// Обновление позиций пуль
                 bullet.Y += 0.05f;
-
-            // Обновление позиций врагов
-            foreach (var enemy in enemies)
+            foreach (var enemy in enemies)// Обновление позиций врагов
                 enemy.Y -= 0.02f;
 
-            // Удаление внеэкранных объектов
-            bullets.RemoveAll(b => b.Y > 1.0f);
+            bullets.RemoveAll(b => b.Y > 1.0f);// Удаление внеэкранных объектов
             enemies.RemoveAll(c => c.Y < -1.0f);
 
             // Спавн врагов
@@ -78,18 +73,16 @@ namespace Raptor
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
             DrawObject(playerTexture, playerX, playerY, 0.1f, 0.1f); // Рисуем игрока
-
-            // Рисуем пули и врагов
-            foreach (var bullet in bullets)
+            
+            foreach (var bullet in bullets)// Рисуем пули и врагов
                 DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
-
             foreach (var enemy in enemies)
                 DrawObject(enemy.Texture, enemy.X, enemy.Y, 0.1f, 0.1f);
 
             SwapBuffers();
         }
 
-        int LoadTexture(string filePath)
+        int LoadTexture(string filePath)//переделать надо
         {
             Bitmap bitmap = new Bitmap(filePath);
             int textureId = GL.GenTexture();
@@ -106,25 +99,22 @@ namespace Raptor
                           PixelType.UnsignedByte, data.Scan0);
 
             bitmap.UnlockBits(data);
-
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Linear);
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Linear);
-
             return textureId;
         }
 
         void DrawObject(int texture, float x, float y, float width, float height)
         {
             GL.BindTexture(TextureTarget.Texture2D, texture);
-            GL.Begin(PrimitiveType.Quads);
+            GL.Begin(PrimitiveType.Quads);//рисуем квадратики
 
-            GL.TexCoord2(0, 0); GL.Vertex2(x - width / 2, y - height / 2);
+            GL.TexCoord2(0, 0); GL.Vertex2(x - width / 2, y - height / 2);//GL.TexCoord2 устанавливает координату текстурки
             GL.TexCoord2(1, 0); GL.Vertex2(x + width / 2, y - height / 2);
             GL.TexCoord2(1, 1); GL.Vertex2(x + width / 2, y + height / 2);
             GL.TexCoord2(0, 1); GL.Vertex2(x - width / 2, y + height / 2);
 
             GL.End();
         }
-
     }
 }
