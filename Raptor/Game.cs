@@ -76,10 +76,13 @@ namespace Raptor
             if (keyboard.IsKeyDown(Key.Up) &&  playerY < 0.95f) playerY += 0.03f;
             if (keyboard.IsKeyDown(Key.Down) && playerY > -0.95f) playerY -= 0.04f;
             if (keyboard.IsKeyDown(Key.Escape))Exit();
+            if (keyboard.IsKeyDown(Key.B) && enemiesRemovedCount >= 2) {
+                cooldownTime = 0.15f;
+                bulletSpeed = 0.06f; } ;
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
             {
-                bullets.Add(new Bullet(playerX + 0.04f, playerY + 0.03f, bulletTexture, bulletSpeed));
-                bullets.Add(new Bullet(playerX - 0.04f, playerY + 0.03f, bulletTexture, bulletSpeed));
+                bullets.Add(new Bullet(playerX + 0.03f, playerY + 0.03f, bulletTexture, bulletSpeed));
+                bullets.Add(new Bullet(playerX - 0.03f, playerY + 0.03f, bulletTexture, bulletSpeed));
                 shootCooldown = cooldownTime; // Устанавливаем время перезарядки после выстрела
                 PlayShootSound(); // Воспроизводим звук выстрела
             }
