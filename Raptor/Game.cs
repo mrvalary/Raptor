@@ -7,6 +7,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 using NAudio.Wave;
+using NAudio.SoundFont;
 
 
 
@@ -141,20 +142,45 @@ namespace Raptor
                 enemies.Add(new Enemy(x, 1.0f, enemyTexture, health, speed));
                 spawnTimer = 0;
             }
-            // Проверка столкновений пуль с врагами
+            // Проверка столкновений пуль с врагами и с пулями врагов
             for (int i = bullets.Count - 1; i >= 0; i--)
             {
+                bool bulletRemoved = false; // Флаг для отслеживания удаления пули игрока
+
                 for (int j = enemies.Count - 1; j >= 0; j--)
                 {
-                    if (CheckCollision(bullets[i].X, bullets[i].Y, 0.05f, 0.05f, enemies[j].X, enemies[j].Y, 0.1f, 0.1f))
+                    var enemy = enemies[j];
+
+                    // 1. Проверка столкновения пули игрока с пулями врага
+                    for (int k = enemy.Bullets.Count - 1; k >= 0; k--)
                     {
-                        enemies[j].TakeDamage(1); // Наносим урон врагу
-                        bullets.RemoveAt(i); // Удаляем пулю
-                        if (enemies[j].Health <= 0) // Если здоровье врага 0 или меньше, удаляем его
+                        if (CheckCollision(bullets[i].X, bullets[i].Y, 0.05f, 0.05f,
+                                           enemy.Bullets[k].X, enemy.Bullets[k].Y, 0.05f, 0.05f))
+                        {
+                            // Если столкновение произошло, удаляем пулю игрока и пулю врага
+                            bullets.RemoveAt(i);
+                            enemy.Bullets.RemoveAt(k);
+                            bulletRemoved = true; // Отмечаем, что пуля игрока удалена
+                            break;
+                        }
+                    }
+
+                    // Если пуля игрока была удалена при столкновении с пулей врага, выходим из цикла врагов
+                    if (bulletRemoved) break;
+
+                    // 2. Проверка столкновения пули игрока с врагом
+                    if (CheckCollision(bullets[i].X, bullets[i].Y, 0.05f, 0.05f, enemy.X, enemy.Y, 0.1f, 0.1f))
+                    {
+                        enemy.TakeDamage(1); // Наносим урон врагу
+                        bullets.RemoveAt(i); // Удаляем пулю игрока
+                        bulletRemoved = true; // Отмечаем, что пуля игрока удалена
+
+                        // Если здоровье врага 0 или меньше, удаляем врага
+                        if (enemy.Health <= 0)
                         {
                             enemies.RemoveAt(j);
                         }
-                        break; // Прекращаем проверку текущей пули
+                        break;
                     }
                 }
             }
@@ -232,8 +258,8 @@ namespace Raptor
         }
         private void LoopMusicBackGroud(object sender, StoppedEventArgs e)
         {
-            backgroundSoundPlayer.Dispose();
             backgroundSoundPlayer.Init(backgroundSound);
+            backgroundSound.Position = 0;
             backgroundSoundPlayer.Play();  // Запускаем трек снова
         }
         private void PlayShootSound()
