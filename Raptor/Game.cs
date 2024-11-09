@@ -76,7 +76,8 @@ namespace Raptor
             if (keyboard.IsKeyDown(Key.Escape))Exit();
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
             {
-                bullets.Add(new Bullet(playerX, playerY + 0.1f, bulletTexture));
+                bullets.Add(new Bullet(playerX + 0.04f, playerY + 0.03f, bulletTexture));
+                bullets.Add(new Bullet(playerX - 0.04f, playerY + 0.03f, bulletTexture));
                 shootCooldown = cooldownTime; // Устанавливаем время перезарядки после выстрела
                 PlayShootSound(); // Воспроизводим звук выстрела
             }
@@ -86,8 +87,7 @@ namespace Raptor
             {
                 enemy.Y -= enemy.Speed; // Движение врага
                 enemy.ShootCooldown -= (float)e.Time; // Обновление времени перезарядки у врагов
-                // Стрельба врагов
-                if (enemy.ShootCooldown <= 0)
+                if (enemy.ShootCooldown <= 0)// Стрельба врагов
                 {
                     enemy.Bullets.Add(new EnemyBullet(enemy.X, enemy.Y - 0.1f, bulletTexture));
                     enemy.ShootCooldown = 2.0f; // Устанавливаем время перезарядки для следующего выстрела
@@ -98,7 +98,6 @@ namespace Raptor
                 // Удаление пуль, которые вышли за экран
                 enemy.Bullets.RemoveAll(b => b.Y < -1.0f);
             }
-
             bullets.RemoveAll(b => b.Y > 1.0f);// Удаление пуль вне экрана                                               
             for (int i = enemies.Count - 1; i >= 0; i--)//если враг вылетел за нижнюю часть карты
             {
@@ -113,15 +112,15 @@ namespace Raptor
             if (spawnTimer >= 1.3f)
             {
                 float x = (float)(random.NextDouble() * 1.8 - 0.9); // Генерация позиции врага по X
-                int health = random.Next(2, 5);
+                int health = random.Next(4, 9);
                 float speed;
-                if (health == 2)
+                if (health >= 4 && health < 6)
                 {
                     speed = 0.009f;
                 }
                 else 
                 {
-                    if (health == 3)
+                    if (health >= 6 && health < 8)
                     {
                         speed = 0.0065f;
                     }
