@@ -15,6 +15,11 @@ namespace Raptor
     public class Game : GameWindow
     {
         private const int enemySize = 35;
+        private WaveOutEvent backgroundSoundPlayer = new WaveOutEvent();// Плеер для фоновой музыки
+        private AudioFileReader backgroundSound =  new AudioFileReader("Sounds/Bckg-1.mp3");// Файл с музыкой
+        private WaveOutEvent shootSoundPlayer = new WaveOutEvent();// Плеер для звука выстрела
+        private AudioFileReader shootSound = new AudioFileReader("Sounds/punch.mp3");// Файл со звуком выстрела
+        
         private int enemiesPassed = 0;  // Счётчик вылетевших врагов
         private float shootCooldown = 0f; // Перезарядка после выстрела
         private const float cooldownTime = 0.15f; // Время между выстрелами, в секундах
@@ -31,8 +36,12 @@ namespace Raptor
         { }
         protected override void OnLoad(EventArgs e)
         {
-            GL.Enable(EnableCap.Blend);
+            shootSoundPlayer.Init(shootSound);
+            backgroundSoundPlayer.Init(backgroundSound);
+            backgroundSoundPlayer.Play();
+            backgroundSoundPlayer.PlaybackStopped += LoopMusicBackGroud;//Зацикливаем музыку
 
+            GL.Enable(EnableCap.Blend);
             base.OnLoad(e);
             GL.ClearColor(Color.Black);
             // Загрузка текстур
@@ -47,7 +56,12 @@ namespace Raptor
         {
             GL.DeleteTexture(playerTexture);
             GL.DeleteTexture(bulletTexture);
-            GL.DeleteTexture(enemyTexture);;
+            GL.DeleteTexture(enemyTexture);
+            backgroundSoundPlayer.Stop();
+            backgroundSoundPlayer.Dispose();
+            backgroundSound.Dispose();
+            shootSoundPlayer.Dispose();
+            shootSound.Dispose();
             base.OnUnload(e);
         }
         
@@ -69,6 +83,7 @@ namespace Raptor
             {
                 bullets.Add(new Bullet(playerX, playerY + 0.1f, bulletTexture));
                 shootCooldown = cooldownTime; // Устанавливаем время перезарядки после выстрела
+                PlayShootSound(); // Воспроизводим звук выстрела
             }
             foreach (var bullet in bullets)// Обновление позиций пуль
                 bullet.Y += 0.05f;
@@ -214,6 +229,17 @@ namespace Raptor
             //GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
             GL.End();
+        }
+        private void LoopMusicBackGroud(object sender, StoppedEventArgs e)
+        {
+            backgroundSoundPlayer.Dispose();
+            backgroundSoundPlayer.Init(backgroundSound);
+            backgroundSoundPlayer.Play();  // Запускаем трек снова
+        }
+        private void PlayShootSound()
+        {
+            shootSound.Position = 0; // Сбрасываем позицию звука на начало
+            shootSoundPlayer.Play();
         }
     }
 }
