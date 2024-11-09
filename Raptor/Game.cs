@@ -22,30 +22,28 @@ namespace Raptor
         private AudioFileReader shootSound = new AudioFileReader("Sounds/punch.mp3");// Файл со звуком выстрела
         
         private int enemiesPassed = 0;  // Счётчик вылетевших врагов
-        private float shootCooldown = 0f; // Перезарядка после выстрела
-        private const float cooldownTime = 0.15f; // Время между выстрелами, в секундах
+        private float shootCooldown = 0f; // Перезарядка после выстрела. Не меняем
+        private const float cooldownTime = 0.15f; // Время между выстрелами, в секундах которое можно задать
         int playerTexture, bulletTexture, enemyTexture;
         float playerX = 0, playerY = -0.8f;
         private List<Bullet> bullets = new List<Bullet>();
         private List<Enemy> enemies = new List<Enemy>();
         Random random = new Random();
         float spawnTimer = 0;
-        
-
         public Game(int w, int h, string title) :
             base(w, h, GraphicsMode.Default, title, GameWindowFlags.FixedWindow)
-        { }
+        {
+            this.X = 600;
+            this.Y = 50;
+        }
         protected override void OnLoad(EventArgs e)
         {
             shootSoundPlayer.Init(shootSound);
             backgroundSoundPlayer.Init(backgroundSound);
             backgroundSoundPlayer.Play();
-            backgroundSoundPlayer.PlaybackStopped += LoopMusicBackGroud;//Зацикливаем музыку
-
             GL.Enable(EnableCap.Blend);
             base.OnLoad(e);
             GL.ClearColor(Color.Black);
-            // Загрузка текстур
             playerTexture = LoadTexture("Textures/player.png");
             bulletTexture = LoadTexture("Textures/bullet.png");
             enemyTexture = LoadTexture("Textures/enemy.png");
@@ -65,21 +63,17 @@ namespace Raptor
             shootSound.Dispose();
             base.OnUnload(e);
         }
-        
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
             var keyboard = Keyboard.GetState();
             shootCooldown -= (float)e.Time;
             if (shootCooldown < 0) shootCooldown = 0;
-
-            // Управление игроком
             if (keyboard.IsKeyDown(Key.Left) && playerX > -0.95f) playerX -= 0.03f;
             if (keyboard.IsKeyDown(Key.Right) && playerX < 0.95f) playerX += 0.03f;
             if (keyboard.IsKeyDown(Key.Up) &&  playerY < 0.95f) playerY += 0.03f;
             if (keyboard.IsKeyDown(Key.Down) && playerY > -0.95f) playerY -= 0.04f;
             if (keyboard.IsKeyDown(Key.Escape))Exit();
-            // Стрельба
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
             {
                 bullets.Add(new Bullet(playerX, playerY + 0.1f, bulletTexture));
@@ -92,16 +86,13 @@ namespace Raptor
             {
                 enemy.Y -= enemy.Speed; // Движение врага
                 enemy.ShootCooldown -= (float)e.Time; // Обновление времени перезарядки у врагов
-
                 // Стрельба врагов
                 if (enemy.ShootCooldown <= 0)
                 {
                     enemy.Bullets.Add(new EnemyBullet(enemy.X, enemy.Y - 0.1f, bulletTexture));
                     enemy.ShootCooldown = 2.0f; // Устанавливаем время перезарядки для следующего выстрела
                 }
-
-                // Обновление пуль врагов
-                foreach (var bullet in enemy.Bullets)
+                foreach (var bullet in enemy.Bullets)// Обновление пуль врагов
                     bullet.Y -= 0.02f;  // Пули врагов летят медленно
 
                 // Удаление пуль, которые вышли за экран
@@ -146,11 +137,9 @@ namespace Raptor
             for (int i = bullets.Count - 1; i >= 0; i--)
             {
                 bool bulletRemoved = false; // Флаг для отслеживания удаления пули игрока
-
                 for (int j = enemies.Count - 1; j >= 0; j--)
                 {
                     var enemy = enemies[j];
-
                     // 1. Проверка столкновения пули игрока с пулями врага
                     for (int k = enemy.Bullets.Count - 1; k >= 0; k--)
                     {
@@ -164,17 +153,14 @@ namespace Raptor
                             break;
                         }
                     }
-
                     // Если пуля игрока была удалена при столкновении с пулей врага, выходим из цикла врагов
                     if (bulletRemoved) break;
-
                     // 2. Проверка столкновения пули игрока с врагом
                     if (CheckCollision(bullets[i].X, bullets[i].Y, 0.05f, 0.05f, enemy.X, enemy.Y, 0.1f, 0.1f))
                     {
                         enemy.TakeDamage(1); // Наносим урон врагу
                         bullets.RemoveAt(i); // Удаляем пулю игрока
                         bulletRemoved = true; // Отмечаем, что пуля игрока удалена
-
                         // Если здоровье врага 0 или меньше, удаляем врага
                         if (enemy.Health <= 0)
                         {
@@ -206,14 +192,13 @@ namespace Raptor
                 foreach (var bullet in enemy.Bullets)
                     DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
             Console.WriteLine($"Enemies passed: {enemiesPassed}");
-            if (enemiesPassed >= 20)
+            if (enemiesPassed >= 110)
             {
                 Console.WriteLine("Проиграли");
                 Exit();
             }
             SwapBuffers();
         }
-
         int LoadTexture(string filePath)//переделать надо
         {
             if(!System.IO.File.Exists(filePath))
@@ -240,7 +225,6 @@ namespace Raptor
             GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Clamp);
             return textureId;
         }
-
         void DrawObject(int texture, float x, float y, float width, float height)
         {
             GL.BindTexture(TextureTarget.Texture2D, texture);
@@ -255,12 +239,6 @@ namespace Raptor
             //GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
 
             GL.End();
-        }
-        private void LoopMusicBackGroud(object sender, StoppedEventArgs e)
-        {
-            backgroundSoundPlayer.Init(backgroundSound);
-            backgroundSound.Position = 0;
-            backgroundSoundPlayer.Play();  // Запускаем трек снова
         }
         private void PlayShootSound()
         {
