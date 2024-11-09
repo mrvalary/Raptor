@@ -16,20 +16,6 @@ namespace Raptor
         public int GlHandle { get; protected set; }//хранит идентификатор текстуры в OpenGL, сгенерированный функцией GL.GenTexture().
         public int Width { get; protected set; }//ширина 
         public int Height { get; protected set; }//и высота текстуры, взятые из изображения
-        public int PotWidth
-        {
-            get
-            {
-                return Width;
-            }
-        }
-        public int PotHeight
-        {
-            get
-            {
-                return Height;
-            }
-        }
         public Texture(Bitmap Bitmap)
         {
             GlHandle = GL.GenTexture();
@@ -39,7 +25,7 @@ namespace Raptor
             Height = Bitmap.Height;
 
             var BitmapData = Bitmap.LockBits(new Rectangle(0, 0, Bitmap.Width, Bitmap.Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, PotWidth, PotHeight, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);
+            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, IntPtr.Zero);
             GL.TexSubImage2D(TextureTarget.Texture2D, 0, 0, 0, BitmapData.Width, BitmapData.Height, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, BitmapData.Scan0);
             Bitmap.UnlockBits(BitmapData);
 

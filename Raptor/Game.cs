@@ -16,7 +16,7 @@ namespace Raptor
         private const int enemySize = 35;
         private int enemiesPassed = 0;  // Счётчик вылетевших врагов
         private float shootCooldown = 0f; // Перезарядка после выстрела
-        private const float cooldownTime = 0.17f; // Время между выстрелами, в секундах
+        private const float cooldownTime = 0.15f; // Время между выстрелами, в секундах
         int playerTexture, bulletTexture, enemyTexture;
         float playerX = 0, playerY = -0.8f;
         List<Bullet> bullets = new List<Bullet>();
@@ -85,24 +85,24 @@ namespace Raptor
             }
             // Спавн врагов
             spawnTimer += (float)e.Time;
-            if (spawnTimer >= 1.0f)
+            if (spawnTimer >= 1.3f)
             {
                 float x = (float)(random.NextDouble() * 1.8 - 0.9); // Генерация позиции врага по X
-                int health = random.Next(1, 4);
+                int health = random.Next(2, 5);
                 float speed;
-                if (health == 1)
+                if (health == 2)
                 {
-                    speed = 0.016f;
+                    speed = 0.009f;
                 }
                 else 
                 {
-                    if (health == 2)
+                    if (health == 3)
                     {
-                        speed = 0.01f;
+                        speed = 0.0065f;
                     }
                     else
                     {
-                        speed = 0.007f;
+                        speed = 0.0012f;
                     }
                 }
                 enemies.Add(new Enemy(x, 1.0f, enemyTexture, health, speed));
@@ -125,7 +125,6 @@ namespace Raptor
                     }
                 }
             }
-
         }
         private bool CheckCollision(float x1, float y1, float width1, float height1, float x2, float y2, float width2, float height2)
         {
@@ -138,7 +137,6 @@ namespace Raptor
         {
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-
             DrawObject(playerTexture, playerX, playerY, 0.1f, 0.1f); // Рисуем игрока
             
             foreach (var bullet in bullets)// Рисуем пули и врагов
