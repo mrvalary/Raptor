@@ -15,21 +15,23 @@ namespace Raptor
 {
     public class Game : GameWindow
     {
-        private const int enemySize = 35;
         private WaveOutEvent backgroundSoundPlayer = new WaveOutEvent();// Плеер для фоновой музыки
         private AudioFileReader backgroundSound =  new AudioFileReader("Sounds/Bckg-1.mp3");// Файл с музыкой
         private WaveOutEvent shootSoundPlayer = new WaveOutEvent();// Плеер для звука выстрела
         private AudioFileReader shootSound = new AudioFileReader("Sounds/punch.mp3");// Файл со звуком выстрела
         
-        private int enemiesPassed = 0;  // Счётчик вылетевших врагов
+        public int enemiesPassed = 0;  // Счётчик пропущеных врагов
         private float shootCooldown = 0f; // Перезарядка после выстрела. Не меняем
-        private const float cooldownTime = 0.15f; // Время между выстрелами, в секундах которое можно задать
+        public float cooldownTime = 0.15f; // Время между выстрелами, в секундах которое можно задать
         int playerTexture, bulletTexture, enemyTexture;
-        float playerX = 0, playerY = -0.8f;
+        float playerX = 0.0f;//стартовая позиция 
+        float playerY = -0.8f;
         private List<Bullet> bullets = new List<Bullet>();
         private List<Enemy> enemies = new List<Enemy>();
         Random random = new Random();
         float spawnTimer = 0;
+        public float bulletSpeed = 0.05f;
+        public int enemiesRemovedCount = 0; //кол-во убитых врагов
         public Game(int w, int h, string title) :
             base(w, h, GraphicsMode.Default, title, GameWindowFlags.FixedWindow)
         {
@@ -76,13 +78,13 @@ namespace Raptor
             if (keyboard.IsKeyDown(Key.Escape))Exit();
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
             {
-                bullets.Add(new Bullet(playerX + 0.04f, playerY + 0.03f, bulletTexture));
-                bullets.Add(new Bullet(playerX - 0.04f, playerY + 0.03f, bulletTexture));
+                bullets.Add(new Bullet(playerX + 0.04f, playerY + 0.03f, bulletTexture, bulletSpeed));
+                bullets.Add(new Bullet(playerX - 0.04f, playerY + 0.03f, bulletTexture, bulletSpeed));
                 shootCooldown = cooldownTime; // Устанавливаем время перезарядки после выстрела
                 PlayShootSound(); // Воспроизводим звук выстрела
             }
             foreach (var bullet in bullets)// Обновление позиций пуль
-                bullet.Y += 0.05f;
+                bullet.Y += bullet.Speed;
             foreach (var enemy in enemies) // Обновление врагов
             {
                 enemy.Y -= enemy.Speed; // Движение врага
@@ -164,6 +166,7 @@ namespace Raptor
                         if (enemy.Health <= 0)
                         {
                             enemies.RemoveAt(j);
+                            enemiesRemovedCount++;
                         }
                         break;
                     }
@@ -190,7 +193,7 @@ namespace Raptor
             foreach (var enemy in enemies) // Рисуем пули врагов
                 foreach (var bullet in enemy.Bullets)
                     DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
-            Console.WriteLine($"Enemies passed: {enemiesPassed}");
+            
             if (enemiesPassed >= 110)
             {
                 Console.WriteLine("Проиграли");
