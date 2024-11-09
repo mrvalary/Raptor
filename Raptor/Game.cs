@@ -152,7 +152,7 @@ namespace Raptor
         {
             GL.BindTexture(TextureTarget.Texture2D, texture);
             GL.Begin(PrimitiveType.Quads);//рисуем квадратики
-            GL.Color4(1.0f, 1.0f, 1.0f, 0.0f); // Установка цвета с альфа-каналом (где 1.0f — непрозрачный, 0.0f — полностью прозрачный)
+            GL.Color4(0.0f, 1.0f, 0.0f, 0.0f); // Установка цвета с альфа-каналом (где 1.0f — непрозрачный, 0.0f — полностью прозрачный)
 
             GL.TexCoord2(0, 0); GL.Vertex2(x - width / 2, y - height / 2);//GL.TexCoord2 устанавливает координату текстурки
             GL.TexCoord2(1, 0); GL.Vertex2(x + width / 2, y - height / 2);
