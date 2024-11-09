@@ -19,8 +19,8 @@ namespace Raptor
         private const float cooldownTime = 0.15f; // Время между выстрелами, в секундах
         int playerTexture, bulletTexture, enemyTexture;
         float playerX = 0, playerY = -0.8f;
-        List<Bullet> bullets = new List<Bullet>();
-        List<Enemy> enemies = new List<Enemy>();
+        private List<Bullet> bullets = new List<Bullet>();
+        private List<Enemy> enemies = new List<Enemy>();
         Random random = new Random();
         float spawnTimer = 0;
         
@@ -71,8 +71,25 @@ namespace Raptor
             }
             foreach (var bullet in bullets)// Обновление позиций пуль
                 bullet.Y += 0.05f;
-            foreach (var enemy in enemies)// Обновление позиций врагов
-                enemy.Y -= enemy.Speed;
+            foreach (var enemy in enemies) // Обновление врагов
+            {
+                enemy.Y -= enemy.Speed; // Движение врага
+                enemy.ShootCooldown -= (float)e.Time; // Обновление времени перезарядки у врагов
+
+                // Стрельба врагов
+                if (enemy.ShootCooldown <= 0)
+                {
+                    enemy.Bullets.Add(new EnemyBullet(enemy.X, enemy.Y - 0.1f, bulletTexture));
+                    enemy.ShootCooldown = 2.0f; // Устанавливаем время перезарядки для следующего выстрела
+                }
+
+                // Обновление пуль врагов
+                foreach (var bullet in enemy.Bullets)
+                    bullet.Y -= 0.02f;  // Пули врагов летят медленно
+
+                // Удаление пуль, которые вышли за экран
+                enemy.Bullets.RemoveAll(b => b.Y < -1.0f);
+            }
 
             bullets.RemoveAll(b => b.Y > 1.0f);// Удаление пуль вне экрана                                               
             for (int i = enemies.Count - 1; i >= 0; i--)//если враг вылетел за нижнюю часть карты
@@ -143,7 +160,9 @@ namespace Raptor
                 DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
             foreach (var enemy in enemies)
                 DrawObject(enemy.Texture, enemy.X, enemy.Y, 0.1f, 0.1f);
-            
+            foreach (var enemy in enemies) // Рисуем пули врагов
+                foreach (var bullet in enemy.Bullets)
+                    DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
             Console.WriteLine($"Enemies passed: {enemiesPassed}");
             if (enemiesPassed >= 20)
             {
