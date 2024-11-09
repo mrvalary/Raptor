@@ -8,6 +8,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
 
+
 namespace Raptor
 {
     public class Game : GameWindow
@@ -95,7 +96,7 @@ namespace Raptor
                 }
                 else 
                 {
-                    if (health >= 2)
+                    if (health == 2)
                     {
                         speed = 0.01f;
                     }
@@ -146,7 +147,11 @@ namespace Raptor
                 DrawObject(enemy.Texture, enemy.X, enemy.Y, 0.1f, 0.1f);
             
             Console.WriteLine($"Enemies passed: {enemiesPassed}");
-
+            if (enemiesPassed >= 20)
+            {
+                Console.WriteLine("Проиграли");
+                Exit();
+            }
             SwapBuffers();
         }
 
