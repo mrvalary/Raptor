@@ -1,23 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
+﻿using NAudio.Wave;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
-using NAudio.Wave;
-using NAudio.SoundFont;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
 namespace Raptor
 {
     public class Game : GameWindow
     {
         private WaveOutEvent backgroundSoundPlayer = new WaveOutEvent();// Плеер для фоновой музыки
-        private AudioFileReader backgroundSound =  new AudioFileReader("Sounds/Bckg-1.mp3");// Файл с музыкой
+        private AudioFileReader backgroundSound = new AudioFileReader("Sounds/Bckg-1.mp3");// Файл с музыкой
         private WaveOutEvent shootSoundPlayer = new WaveOutEvent();// Плеер для звука выстрела
         private AudioFileReader shootSound = new AudioFileReader("Sounds/punch.mp3");// Файл со звуком выстрела
         private WaveOutEvent bufSoundPlayer = new WaveOutEvent();
         private AudioFileReader bufSound = new AudioFileReader("Sounds/buf.mp3");// Файл баффа
+        private WaveOutEvent enemyDeadPlayer = new WaveOutEvent();
+        private AudioFileReader enemyDead = new AudioFileReader("Sounds/enemy-dead.mp3");//смерть врага
 
         public int enemiesPassed = 0;  // Счётчик пропущеных врагов
         private float shootCooldown = 0f; // Перезарядка после выстрела. Не меняем
@@ -42,6 +43,7 @@ namespace Raptor
             shootSoundPlayer.Init(shootSound);
             bufSoundPlayer.Init(bufSound);
             backgroundSoundPlayer.Init(backgroundSound);
+            enemyDeadPlayer.Init(enemyDead);
             backgroundSoundPlayer.Play();
             GL.Enable(EnableCap.Blend);
             base.OnLoad(e);
@@ -61,6 +63,10 @@ namespace Raptor
             backgroundSoundPlayer.Stop();
             backgroundSoundPlayer.Dispose();
             backgroundSound.Dispose();
+            bufSoundPlayer.Dispose();
+            bufSound.Dispose();
+            enemyDeadPlayer.Dispose();
+            enemyDead.Dispose();
             shootSoundPlayer.Dispose();
             shootSound.Dispose();
             base.OnUnload(e);
@@ -73,15 +79,15 @@ namespace Raptor
             if (shootCooldown < 0) shootCooldown = 0;
             if (keyboard.IsKeyDown(Key.Left) && playerX > -0.95f) playerX -= 0.03f;
             if (keyboard.IsKeyDown(Key.Right) && playerX < 0.95f) playerX += 0.03f;
-            if (keyboard.IsKeyDown(Key.Up) &&  playerY < 0.95f) playerY += 0.03f;
+            if (keyboard.IsKeyDown(Key.Up) && playerY < 0.95f) playerY += 0.03f;
             if (keyboard.IsKeyDown(Key.Down) && playerY > -0.95f) playerY -= 0.04f;
-            if (keyboard.IsKeyDown(Key.Escape))Exit();
-            if (keyboard.IsKeyDown(Key.B) && enemiesRemovedCount >= 0) 
+            if (keyboard.IsKeyDown(Key.Escape)) Exit();
+            if (keyboard.IsKeyDown(Key.B) && enemiesRemovedCount >= 0)
             {
                 cooldownTime = 0.11f;
                 bulletSpeed = 0.09f;
-                bufSoundPlayer.Play();
-            } 
+                PlayBufSound();
+            }
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
             {
                 bullets.Add(new Bullet(playerX + 0.03f, playerY + 0.03f, bulletTexture, bulletSpeed));
@@ -126,7 +132,7 @@ namespace Raptor
                 {
                     speed = 0.009f;
                 }
-                else 
+                else
                 {
                     if (health >= 6 && health < 8)
                     {
@@ -170,6 +176,7 @@ namespace Raptor
                         bulletRemoved = true; // Отмечаем, что пуля игрока удалена                        
                         if (enemy.Health <= 0)// Если здоровье врага 0, удаляем врага
                         {
+                            PlayEnemyDeadSound();
                             enemies.RemoveAt(j);
                             enemiesRemovedCount++;
                         }
@@ -190,7 +197,7 @@ namespace Raptor
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit);
             DrawObject(playerTexture, playerX, playerY, 0.1f, 0.1f); // Рисуем игрока
-            
+
             foreach (var bullet in bullets)// Рисуем пули и врагов
                 DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
             foreach (var enemy in enemies)
@@ -198,7 +205,7 @@ namespace Raptor
             foreach (var enemy in enemies) // Рисуем пули врагов
                 foreach (var bullet in enemy.Bullets)
                     DrawObject(bullet.Texture, bullet.X, bullet.Y, 0.05f, 0.05f);
-            
+
             if (enemiesPassed >= 110)
             {
                 Console.WriteLine("Проиграли");
@@ -208,7 +215,7 @@ namespace Raptor
         }
         int LoadTexture(string filePath)//переделать надо
         {
-            if(!System.IO.File.Exists(filePath))
+            if (!System.IO.File.Exists(filePath))
                 throw new Exception($"Файл не найден: {filePath}");
 
             Bitmap bitmap = new Bitmap(filePath);
@@ -251,6 +258,16 @@ namespace Raptor
         {
             shootSound.Position = 0; // Сбрасываем позицию звука на начало
             shootSoundPlayer.Play();
+        }
+        private void PlayEnemyDeadSound()
+        {
+            enemyDead.Position = 0; // Сбрасываем позицию звука на начало
+            enemyDeadPlayer.Play();
+        }
+        private void PlayBufSound()
+        {
+            bufSound.Position = 0; // Сбрасываем позицию звука на начало
+            bufSoundPlayer.Play();
         }
     }
 }

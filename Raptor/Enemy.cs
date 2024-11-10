@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using System.Collections.Generic;
 namespace Raptor
 {
     public class Enemy
@@ -15,7 +10,6 @@ namespace Raptor
         public float Speed { get; set; }
         public float ShootCooldown { get; set; }
         public List<EnemyBullet> Bullets { get; set; }  // Список пуль врага
-
         public Enemy(float x, float y, int texture, float health, float speed)
         {
             X = x;
@@ -26,7 +20,6 @@ namespace Raptor
             ShootCooldown = 0;
             Bullets = new List<EnemyBullet>();  // Инициализация списка пуль врага
         }
-
         public void TakeDamage(float damage)
         {
             Health -= damage;

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Raptor
+﻿namespace Raptor
 {
     public class Bullet
     {
@@ -19,6 +13,4 @@ namespace Raptor
             Texture = texture;
         }
     }
-
-    
 }

@@ -103,6 +103,12 @@
     <Content Include="OpenTK\OpenTK.GLControl.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Sounds\enemy-dead.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Sounds\punch2.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Sounds\Bckg-1.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
