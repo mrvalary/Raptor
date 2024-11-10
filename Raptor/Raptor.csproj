@@ -106,6 +106,9 @@
     <Content Include="Sounds\Bckg-1.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Sounds\buf.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Sounds\punch.mp3">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

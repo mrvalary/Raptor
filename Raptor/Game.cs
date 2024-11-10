@@ -16,7 +16,9 @@ namespace Raptor
         private AudioFileReader backgroundSound =  new AudioFileReader("Sounds/Bckg-1.mp3");// Файл с музыкой
         private WaveOutEvent shootSoundPlayer = new WaveOutEvent();// Плеер для звука выстрела
         private AudioFileReader shootSound = new AudioFileReader("Sounds/punch.mp3");// Файл со звуком выстрела
-        
+        private WaveOutEvent bufSoundPlayer = new WaveOutEvent();
+        private AudioFileReader bufSound = new AudioFileReader("Sounds/buf.mp3");// Файл баффа
+
         public int enemiesPassed = 0;  // Счётчик пропущеных врагов
         private float shootCooldown = 0f; // Перезарядка после выстрела. Не меняем
         public float cooldownTime = 0.15f; // Время между выстрелами, в секундах которое можно задать
@@ -38,6 +40,7 @@ namespace Raptor
         protected override void OnLoad(EventArgs e)
         {
             shootSoundPlayer.Init(shootSound);
+            bufSoundPlayer.Init(bufSound);
             backgroundSoundPlayer.Init(backgroundSound);
             backgroundSoundPlayer.Play();
             GL.Enable(EnableCap.Blend);
@@ -73,9 +76,12 @@ namespace Raptor
             if (keyboard.IsKeyDown(Key.Up) &&  playerY < 0.95f) playerY += 0.03f;
             if (keyboard.IsKeyDown(Key.Down) && playerY > -0.95f) playerY -= 0.04f;
             if (keyboard.IsKeyDown(Key.Escape))Exit();
-            if (keyboard.IsKeyDown(Key.B) && enemiesRemovedCount >= 2) {
+            if (keyboard.IsKeyDown(Key.B) && enemiesRemovedCount >= 0) 
+            {
                 cooldownTime = 0.11f;
-                bulletSpeed = 0.09f; } ;
+                bulletSpeed = 0.09f;
+                bufSoundPlayer.Play();
+            } 
             if (keyboard.IsKeyDown(Key.Space) && shootCooldown <= 0)
             {
                 bullets.Add(new Bullet(playerX + 0.03f, playerY + 0.03f, bulletTexture, bulletSpeed));
@@ -161,9 +167,8 @@ namespace Raptor
                     {
                         enemy.TakeDamage(1); // Наносим урон врагу
                         bullets.RemoveAt(i); // Удаляем пулю игрока
-                        bulletRemoved = true; // Отмечаем, что пуля игрока удалена
-                        // Если здоровье врага 0 или меньше, удаляем врага
-                        if (enemy.Health <= 0)
+                        bulletRemoved = true; // Отмечаем, что пуля игрока удалена                        
+                        if (enemy.Health <= 0)// Если здоровье врага 0, удаляем врага
                         {
                             enemies.RemoveAt(j);
                             enemiesRemovedCount++;
