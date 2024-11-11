@@ -48,9 +48,9 @@ namespace Raptor
             GL.Enable(EnableCap.Blend);
             base.OnLoad(e);
             GL.ClearColor(Color.Black);
-            playerTexture = LoadTexture("Textures/player.png");
+            playerTexture = LoadTexture("Textures/spacecraft.png");
             bulletTexture = LoadTexture("Textures/bullet.png");
-            enemyTexture = LoadTexture("Textures/enemy.png");
+            enemyTexture = LoadTexture("Textures/rocket.png");
             GL.Enable(EnableCap.Texture2D);
             GL.EnableClientState(ArrayCap.VertexArray);
             GL.EnableClientState(ArrayCap.TextureCoordArray);
